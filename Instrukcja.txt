@@ -1,0 +1,137 @@
+Polygon Editor
+Bartosz Dybowski
+
+1. Instrukcja obsługi.
+
+Aby sterować programem należy wybrać odpowiedni tryb w Menu -> Mode.
+
+1.1 Tryby:
+
+	a) tryb 'Draw'
+
+	Tryb rysowania wielokątów. Żeby rozpocząć rysowanie należy zaznaczyć 'Draw' w mode.
+	A następnie kliknąć w dowolne miejsce na błękitnym polu. Aby zakończyć rysowanie, wielokąt
+	powinien być zamknięty, dlatego należy kliknąć w pierwszy narysowany wierzchołek.
+	Domyślnie rysowanie odbywa się za pomocą algorytmu bibliotecznego, aby zastosować algorytm Bresenhama
+	należy zaznaczyć checkBox 'Bresenham algorithm'.
+
+	b) tryb 'Add vertices'
+
+	Tryb dodawania wierzchołków do istniejących wielokątów. Aby dodać taki wierzchołek należy
+	zaznaczyć 'Add vertices' w Mode, a następnie kliknąc w krawędź, na której powinien zostać umieszczony
+	dodatkowy wierzchołek. Po dodaniu wierzchołka na danej krawędzi, zostają z niej usunięte wszystkie 
+	ograniczenia.
+
+	c) tryb 'Select edges'
+
+	Po wybraniu tego trybu jest możliwość zaznaczania krawędzi, którym powinno zostać nadane ograniczenie.
+	Można zaznaczyć jedną, bądź 2 krawędzie: 
+
+	- gdy będzie zaznaczona jedna krawędź aktywny stanie się przycisk
+	'Add limitation on length', który pozwala nadać ograniczenie na długość,
+
+	- gdy będą zaznaczone dwie krawędzie aktywny stanie się przycisk 'Add
+	limitation on parallelism', który pozwala nadać ograniczenie na równoległość.
+
+	Ograniczenie na długość można nadawać zarówno przy jednej, jak i dwóch zaznaczonych krawędziach, ograniczenie 
+	na równoległość tylko przy dwóch zaznaczonych krawędziach.
+
+	Po zaznaczeniu krawędzi i naciśnięciu przycisku 'Add limitation on length' pojawi sie okno, z polami, w których
+	należy wpisać nowe długości jednej bądź dwóch krawędzi (w zależności od liczby zaznaczonych krawędzi). Domyślnie
+	w polach pojawiają się aktualne długości krawędzi. Wybór należy zaakceptować przyciskiem 'Ok'.
+
+	Po zaznaczeniu dwóch krawędzi i naciśnięciu 'Add limitation on parallelism' zostanie nadane ograniczenie na równoległość.
+	Istnieje możliwość dodania kilku równoległych krawędzi: gdy zaznaczona zostanie jedna krawędz, która już posiada ograniczenie
+	na równoległość i jedna bez takiego ograniczenia to krawędź taka zostanie dołączona do ograniczenia i powstana 3 równoległe
+	krawędzie. Analogicznie, gdy zaznaczona zostanie jedna krawędź z ograniczeniem na równoległość i druga z innym ograniczeniem
+	na równoległość to wszystkie krawędzie, z którymi te 2 są razem w relacji staną się równoległe.
+
+	Po zastosowaniu ograniczeń, na środku krawędzi pojawią sie ikonki ograniczeń. W przypadku ograniczenia na długość będzie to
+	długość krawędzi, natomiast w przypadku równoległosci bedzie to 'P{liczba}', gdzie ta sama liczba oznacza, że dane krawędzie 
+	są do siebie równoległe.
+
+	*Usuwanie ograniczeń patrz tryb 'Remove'.
+
+	d) tryb 'Move'
+
+	Tryb przesuwania elementów (wierzchołków, krawędzi lub całego wielokąta). Aby przesunąć dany element należy najechać na niego myszką,
+	nacisnąc lewy przycisk myszki, przesunać i podnieść go w pożądanym miejscu. Po najechaniu myszką na dany element zostaje on podświetlony.
+
+	e) tryb 'Remove'
+
+	Tryb usuwania elementów. Po najechaniu myszką elementy zostaną podświetlone, a po naciśnieciu zostają usuniętę. W przypadku krawędzi z 
+	ograniczeniami pojawi się okno wyboru z pytaniem czy usunąć relację i którą, czy usunąć całą krawędź. 
+	Gdy liczba krawędzi podczas usuwania stanie się mniejsza niż 3 to cały wielokąt zostaje usunięty.
+
+1.2 Przyciski:
+
+	a) 'Add limitation on length' i 'Add limitation on parallelism' patrz tryb 'Select edges'
+	b) 'Delete last edge' - usuwa ostatnią narysowaną krawędź w ostanio edytowanym wielokącie(*)
+	c) 'Delete last polygon' - usuwa ostatnio edytowany wielokąt(*)
+	d) 'Clear' - usuwa wszystkie wielokąty
+
+*edycja wielokąta to rysowanie wielokąta lub przesuwanie go
+
+2. Algorytmy dodawania ograniczeń:
+
+Założenie: nie można nadawać równoległości dwóm sąsiednim krawędziom.
+Każde ograniczenie ma swoje 'id' wykorzystywane w hashSet do przerywania rekurencji.
+
+2.1 dodawanie ograniczenia na długość
+
+	bool applyLimitation(List<Polygon>, HashSet)
+	1. Zmień długość danej krawędzi (skróć, wydłuż), nie zmieniając orientacji (aby zachować ewentualną relację równoległości).
+	2. return repair()
+	
+2.2 dodawanie ograniczenia na rónoległosć
+	
+	bool applyLimitation(List<Polygon>, HashSet)
+	1. Sprawdź, czy ograniczenie było już zastosowane:
+		- jeśli tak to zwróć false,
+		- jeśli nie oznacz jako zastosowane i kontynuuj 
+	2. Weź krawędz oznaczoną jako główną.
+	3. Dla każdej krawędzi, która jest w relacji z głowną:
+		1) zmień orientację tak, aby była równoległa do głównej
+		2) wywolaj repair()
+			- jeśli repir zwróciło false, przerwij i zwróć false
+			- wpp kontynuuj
+	4. Zwroć true
+
+2.3 naprawianie wielokąta
+
+	bool repair(Polygon, List<Edge>, int index, List<Polygon>, HashSet)
+	1. Sprawdz, czy wielokąt jest naprawiony.
+		- jesli tak zwróć true,
+		- jeśli nie kontynuuj
+	2. int i = index
+	3. Powtarzaj:
+
+		1) i_next = i + 1
+		2) Weź krawedz o indeksie i oraz krawedz o indeksie i_next
+		3) Sprawdz czy istnieje takie ułożenie tych krawędzi, że zachowują relacje i się przecinają
+			- jeśli tak to ustaw ich wspolny wierzcholek jako punkt przeciecia i zwroć true
+			- jeśli nie to kontynuuj
+		4) Jeśli jednej z krawędzi można zmienić długość to zmień ją tak (nie zważając na relacje rownoleglosci), aby
+		   krawedzie miały wspolny wierzchołek.
+		5) Jeśli w punkcie 4 naruszone zostało ograniczenie na równoległosć to ustaw krawędź, która została 'popsuta' jako główną
+       	  w danym ograniczeniu i wywołaj applyLimitation na tym ograniczeniu.
+			- jeśli applyLimitation zwróciło true zwróć true
+			- wpp wróć do ustawienia krawędzi takiego jakie było po punkcie 3
+		6) Przesuń krawędź o indeksie i_next tak aby miała wspólny wierzchołek z krawedzią o indeksie i zachowując wszystkie ograniczenia 
+		7) i = i_next
+
+	dopóki (i != index)
+
+	4) Jeśli edges[i].pointB == edges[i_next].pointA zwroc true;
+	5) Zwróć false
+
+
+
+
+
+
+
+
+
+
+
