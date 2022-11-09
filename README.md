@@ -2,4 +2,5 @@ Polygon Editor allows simple polygon configuration with the possibility of addin
 
 Written in WinForms, .Net Core 3.1.
 
-![polygonEditor](https://user-images.githubusercontent.com/72929760/200711539-67d89323-0814-4ba4-b4e4-1945217cfb95.png)
+![polygonEditor](https://user-images.githubusercontent.com/72929760/200711756-7d6d871b-8fca-44b4-b990-d72b31d7e630.png)
+
